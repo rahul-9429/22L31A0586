@@ -54,7 +54,7 @@ function UrlShortenerPage() {
     if (!validateUrl(url)) {
       setResult({
         success: false,
-        error: "Please enter a valid url.Try something like: https://example.com"
+        error: "Please enter a valid URL. Try something like: https://example.com"
       });
       return;
     }
@@ -62,7 +62,7 @@ function UrlShortenerPage() {
     if (validity <= 0) {
       setResult({
         success: false,
-        error: "Validity should be at least 1 minute! "
+        error: "Validity should be at least 1 minute!"
       });
       return;
     }
@@ -70,7 +70,7 @@ function UrlShortenerPage() {
     if (shortcode && !/^[a-zA-Z0-9]{3,20}$/.test(shortcode)) {
       setResult({
         success: false,
-        error: "Custom shortcode should be 3-20 characters with only letters and numbers "
+        error: "Custom shortcode should be 3-20 characters with only letters and numbers"
       });
       return;
     }
@@ -78,11 +78,22 @@ function UrlShortenerPage() {
     setLoading(true);
 
     try {
+      console.log(`Creating short URL for: ${url.trim()}`);
+      console.log(`Validity: ${validity} minutes`);
+      console.log(`Custom shortcode: ${shortcode.trim() || 'auto-generated'}`);
+
       const response = await axios.post(`${API_BASE}/shorturls`, {
         url: url.trim(),
         validity: Number(validity),
         shortcode: shortcode.trim() || undefined
+      }, {
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        timeout: 10000
       });
+
+      console.log(`Success! Short URL created:`, response.data);
 
       setResult({
         success: true,
@@ -98,9 +109,21 @@ function UrlShortenerPage() {
       setValidity(30);
 
     } catch (error) {
+      console.error(`Error creating short URL:`, error);
+      
+      let errorMessage = 'Oops! Something went wrong. Please try again!';
+      
+      if (error.response) {
+        errorMessage = error.response.data?.error || `Server Error: ${error.response.status}`;
+      } else if (error.request) {
+        errorMessage = 'Unable to connect to server. Please check if the server is running on localhost:5000';
+      } else {
+        errorMessage = error.message;
+      }
+
       setResult({
         success: false,
-        error: error.response?.data?.error || 'Oops! Something went wrong. Please try again!'
+        error: errorMessage
       });
     } finally {
       setLoading(false);
@@ -123,11 +146,19 @@ function UrlShortenerPage() {
     }
   };
 
-  return (
-    <Box sx={{ maxWidth: 800, mx: 'auto' }}>
-     
+  const testShortUrl = async (shortLink) => {
+    try {
+      console.log(`Testing redirect for: ${shortLink}`);
+      window.open(shortLink, '_blank');
+    } catch (error) {
+      console.error('Error testing short URL:', error);
+    }
+  };
 
+  return (
+    <Box sx={{ maxWidth: 800, mx: 'auto', p: 2 }}>
       <Paper elevation={3} sx={{ p: 4, mb: 3 }}>
+         
         <Typography variant="h5" gutterBottom sx={{ textAlign: 'center', mb: 3 }}>
           Let's make your long URL shorter!
         </Typography>
@@ -141,7 +172,7 @@ function UrlShortenerPage() {
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="https://example.com/very-very-long-url-that-needs-shortening"
+            placeholder="https://github.com/rahul-9429/Portfolio"
             variant="outlined"
             disabled={loading}
             sx={{ mb: 2 }}
@@ -172,7 +203,7 @@ function UrlShortenerPage() {
               value={shortcode}
               onChange={(e) => setShortcode(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="my-awesome-link"
+              placeholder="portfolio"
               disabled={loading}
             />
           </Box>
@@ -194,20 +225,18 @@ function UrlShortenerPage() {
             {loading ? (
               <>
                 <CircularProgress size={20} sx={{ mr: 1 }} />
-                Shortening your url...
+                Shortening your URL...
               </>
             ) : (
-              ' Shorten My URL!'
+              'Shorten My URL!'
             )}
           </Button>
         </Box>
-
-        
       </Paper>
 
       {copySuccess && (
         <Alert severity="success" sx={{ mb: 2 }}>
-         Copied to clipboard! Share away!
+          Copied to clipboard! Share away!
         </Alert>
       )}
 
@@ -217,7 +246,7 @@ function UrlShortenerPage() {
             <Box textAlign="center">
               <CheckCircleIcon color="success" sx={{ fontSize: 60, mb: 2 }} />
               <Typography variant="h4" color="success.main" gutterBottom>
-                 Success!
+                Success!
               </Typography>
               <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
                 Your URL has been shortened successfully!
@@ -225,7 +254,7 @@ function UrlShortenerPage() {
               
               <Card variant="outlined" sx={{ mb: 3, p: 3, bgcolor: 'grey.50' }}>
                 <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                 Original URL:
+                  Original URL:
                 </Typography>
                 <Typography variant="body2" sx={{ mb: 2, wordBreak: 'break-all' }}>
                   {result.data.originalUrl}
@@ -234,7 +263,7 @@ function UrlShortenerPage() {
                 <Divider sx={{ my: 2 }} />
                 
                 <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                 Your shortened URL:
+                  Your shortened URL:
                 </Typography>
                 <Box 
                   sx={{ 
@@ -255,15 +284,25 @@ function UrlShortenerPage() {
                   </Typography>
                 </Box>
                 
-                <Button
-                  variant="contained"
-                  startIcon={<CopyIcon />}
-                  onClick={() => copyToClipboard(result.data.shortLink)}
-                  size="large"
-                  sx={{ mb: 2 }}
-                >
-                   Copy Link
-                </Button>
+                <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', mb: 2 }}>
+                  <Button
+                    variant="contained"
+                    startIcon={<CopyIcon />}
+                    onClick={() => copyToClipboard(result.data.shortLink)}
+                    size="large"
+                  >
+                    Copy Link
+                  </Button>
+                  
+                  <Button
+                    variant="outlined"
+                    startIcon={<LinkIcon />}
+                    onClick={() => testShortUrl(result.data.shortLink)}
+                    size="large"
+                  >
+                    Test Link
+                  </Button>
+                </Box>
                 
                 <Box display="flex" alignItems="center" justifyContent="center" gap={1}>
                   <ScheduleIcon fontSize="small" color="action" />
@@ -282,7 +321,6 @@ function UrlShortenerPage() {
               <Alert severity="error" sx={{ mt: 2 }}>
                 {result.error}
               </Alert>
-             
             </Box>
           )}
         </Paper>

@@ -338,9 +338,7 @@ function StatisticsPage() {
                       <Typography variant="caption" color="text.secondary" display="block">
                          {url.shortLink}
                       </Typography>
-                      <Typography variant="caption" color="text.secondary" display="block">
-                        Created by: rahul-9429 • 2025-09-04 05:48:32 UTC
-                      </Typography>
+                     
                     </Collapse>
                   </CardContent>
                 </Card>

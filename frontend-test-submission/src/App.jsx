@@ -8,11 +8,19 @@ import {
   Tab,
   Box,
   Chip,
-  Link
+  Link,
+  Avatar,
+  IconButton,
+  Menu,
+  MenuItem
 } from '@mui/material';
+import {
+  GitHub as GitHubIcon,
+  Person as PersonIcon,
+  Schedule as ScheduleIcon
+} from '@mui/icons-material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import { GitHub as GitHubIcon } from '@mui/icons-material';
 import UrlShortenerPage from './components/UrlShortenerPage';
 import StatisticsPage from './components/StatisticsPage';
 
@@ -51,9 +59,36 @@ function TabPanel({ children, value, index, ...other }) {
 
 function App() {
   const [tabValue, setTabValue] = useState(0);
+  const [anchorEl, setAnchorEl] = useState(null);
+
+  // Current context data
+  const currentUser = 'rahul-9429';
+  const currentDateTime = '2025-09-04 07:20:08';
+  const topRepositories = [
+    { name: 'rahul-9429/mock-test', url: 'https://github.com/rahul-9429/mock-test' },
+    { name: 'rahul-9429/Portfolio', url: 'https://github.com/rahul-9429/Portfolio' },
+    { name: 'rahul-9429/mamu-cv', url: 'https://github.com/rahul-9429/mamu-cv' },
+    { name: 'rahul-9429/22L31A0586', url: 'https://github.com/rahul-9429/22L31A0586' },
+    { name: 'Daspavan020/Icon-Travels', url: 'https://github.com/Daspavan020/Icon-Travels' }
+  ];
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
+    console.log(`[${currentDateTime}] ${currentUser} switched to tab: ${newValue === 0 ? 'URL Shortener' : 'Statistics & Analytics'}`);
+  };
+
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleRepoClick = (repo) => {
+    console.log(`[${currentDateTime}] ${currentUser} accessing repository: ${repo.name}`);
+    window.open(repo.url, '_blank');
+    handleMenuClose();
   };
 
   return (
@@ -65,28 +100,12 @@ function App() {
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               URL Shortener
             </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Chip 
-                label="rahul-9429" 
-                variant="outlined" 
-                size="small"
-                sx={{ color: 'white', borderColor: 'white' }}
-              />
-              <Link 
-                href="https://github.com/rahul-9429" 
-                target="_blank" 
-                rel="noopener"
-                sx={{ color: 'white', display: 'flex', alignItems: 'center' }}
-              >
-                <GitHubIcon />
-              </Link>
-            </Box>
+            
+           
           </Toolbar>
         </AppBar>
         
         <Container maxWidth="lg">
-
-          
           <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
             <Tabs value={tabValue} onChange={handleTabChange} centered>
               <Tab label="URL Shortener" />
@@ -95,15 +114,35 @@ function App() {
           </Box>
           
           <TabPanel value={tabValue} index={0}>
-            <UrlShortenerPage />
+            <UrlShortenerPage 
+              currentUser={currentUser}
+              currentDateTime={currentDateTime}
+              topRepositories={topRepositories}
+            />
           </TabPanel>
           
           <TabPanel value={tabValue} index={1}>
-            <StatisticsPage />
+            <StatisticsPage 
+              currentUser={currentUser}
+              currentDateTime={currentDateTime}
+              topRepositories={topRepositories}
+            />
           </TabPanel>
         </Container>
         
-         
+        <Box 
+          component="footer" 
+          sx={{ 
+            mt: 4, 
+            py: 2, 
+            px: 3, 
+            bgcolor: 'grey.100',
+            borderTop: 1,
+            borderColor: 'divider'
+          }}
+        >
+          
+        </Box>
       </Box>
     </ThemeProvider>
   );
